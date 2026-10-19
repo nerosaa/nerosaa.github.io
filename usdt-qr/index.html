@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>USDT Wallet QR Code Generator — TRC20 / BEP20 / ERC20</title>
+  <meta name="description" content="Free USDT wallet QR code generator for TRC20, BEP20, and ERC20 addresses. Client-side only — your address never leaves the browser." />
+  <meta name="keywords" content="usdt trc20 qr code generator, usdt wallet qr code generator, usdt payment qr, bep20 qr code, tron address qr" />
+  <style>
+    :root { font-family: system-ui, sans-serif; color: #0f172a; background: #f8fafc; }
+    body { max-width: 760px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+    h1 { font-size: 1.45rem; margin-bottom: .35rem; }
+    .muted { color: #64748b; }
+    label { display: block; font-size: .9rem; margin: .8rem 0 .25rem; }
+    input, select { width: 100%; max-width: 420px; padding: .5rem .6rem; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; }
+    .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.1rem; margin: 1.1rem 0; }
+    .row { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin-top: .75rem; }
+    button, .buy { display: inline-block; background: #0f766e; color: #fff !important; border: 0; text-decoration: none; padding: .55rem .9rem; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: .95rem; }
+    button.secondary { background: #334155; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    a { color: #0369a1; }
+    #qrWrap { display: flex; flex-direction: column; align-items: flex-start; gap: .5rem; margin-top: 1rem; min-height: 2rem; }
+    #qrWrap canvas, #qrWrap img { border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; padding: .5rem; }
+    #status { font-size: .9rem; margin-top: .5rem; }
+    #status.err { color: #b91c1c; }
+    #status.ok { color: #047857; }
+    footer { margin-top: 2rem; font-size: .85rem; color: #64748b; }
+    code { background: #f1f5f9; padding: .1rem .35rem; border-radius: 4px; font-size: .85rem; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <p><a href="../">← All tools</a></p>
+  <h1>USDT wallet QR code generator</h1>
+  <p class="muted">Paste a TRC20 / BEP20 / ERC20 (or Arbitrum) address and get a QR to show your payer. Runs entirely in your browser — nothing is uploaded.</p>
+
+  <div class="card">
+    <label for="network">Network</label>
+    <select id="network">
+      <option value="trc20">TRC20 (Tron)</option>
+      <option value="bep20" selected>BEP20 (BNB Chain)</option>
+      <option value="erc20">ERC20 (Ethereum)</option>
+      <option value="arbitrum">Arbitrum USDT/USDC</option>
+    </select>
+
+    <label for="address">Wallet address</label>
+    <input id="address" type="text" spellcheck="false" autocomplete="off" placeholder="0x… or T…" />
+
+    <label for="amount">Optional amount label (USDT, shown under QR only)</label>
+    <input id="amount" type="number" min="0" step="0.01" placeholder="e.g. 50" />
+
+    <label for="note">Optional note (shown under QR only)</label>
+    <input id="note" type="text" maxlength="80" placeholder="e.g. Invoice #104" />
+
+    <div class="row">
+      <button type="button" id="gen">Generate QR</button>
+      <button type="button" id="copy" class="secondary" disabled>Copy address</button>
+      <button type="button" id="dl" class="secondary" disabled>Download PNG</button>
+    </div>
+    <p id="status" class="muted"></p>
+    <div id="qrWrap"></div>
+    <p id="meta" class="muted"></p>
+  </div>
+
+  <div class="card">
+    <p><strong>Tip:</strong> tell the payer the network before they scan. Wrong chain = lost funds. Prefer BNB, Arbitrum, or Tron for small amounts.</p>
+    <p class="muted">Need Claude / Cursor prompts + MCP skills for crypto freelancing?</p>
+    <a class="buy" href="https://www.getly.store/product/usdt-agent-skills-pack-claude-cursor-mcp-for-crypto-freelancers">Get USDT Agent Skills Pack — $9</a>
+    <p class="muted" style="margin-top:.7rem">Or the <a href="https://www.getly.store/product/usdt-invoice-kit-offline-freelancer-invoice-prompt-pack">USDT Invoice Kit — $7</a> · <a href="https://www.getly.store/store/nero-tools-mvb64f1s">Store</a></p>
+  </div>
+
+  <footer>
+    <p>Client-side only. QR encodes the raw address (not a payment request URI). Always double-check the first and last 4 characters after scanning.</p>
+    <p><a href="https://www.getly.store/store/nero-tools-mvb64f1s">NERO Tools on Getly</a> · <a href="../usdt-network-fees/">Fee comparison</a></p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script>
+    const evmRe = /^0x[a-fA-F0-9]{40}$/;
+    const tronRe = /^T[1-9A-HJ-NP-Za-km-z]{33}$/;
+
+    function validate(net, addr) {
+      addr = (addr || "").trim();
+      if (!addr) return "Paste a wallet address.";
+      if (net === "trc20") {
+        if (!tronRe.test(addr)) return "TRC20 addresses start with T and are 34 characters (Base58).";
+      } else {
+        if (!evmRe.test(addr)) return "EVM addresses must be 0x + 40 hex characters.";
+      }
+      return null;
+    }
+
+    function setStatus(msg, cls) {
+      const el = document.getElementById("status");
+      el.textContent = msg || "";
+      el.className = cls || "muted";
+    }
+
+    async function generate() {
+      const net = document.getElementById("network").value;
+      const addr = document.getElementById("address").value.trim();
+      const amount = document.getElementById("amount").value;
+      const note = document.getElementById("note").value.trim();
+      const err = validate(net, addr);
+      const wrap = document.getElementById("qrWrap");
+      const meta = document.getElementById("meta");
+      wrap.innerHTML = "";
+      meta.textContent = "";
+      document.getElementById("copy").disabled = true;
+      document.getElementById("dl").disabled = true;
+      if (err) { setStatus(err, "err"); return; }
+      if (typeof QRCode === "undefined") { setStatus("QR library failed to load. Check your network and retry.", "err"); return; }
+      try {
+        const canvas = document.createElement("canvas");
+        await QRCode.toCanvas(canvas, addr, { width: 280, margin: 2, errorCorrectionLevel: "M" });
+        wrap.appendChild(canvas);
+        const bits = [];
+        bits.push("Network: " + document.getElementById("network").selectedOptions[0].text);
+        bits.push("Address: " + addr);
+        if (amount) bits.push("Amount: " + amount + " USDT (label only)");
+        if (note) bits.push("Note: " + note);
+        meta.innerHTML = bits.map(function (b) { return "<div><code>" + b.replace(/</g, "&lt;") + "</code></div>"; }).join("");
+        setStatus("QR ready. Show this screen or download the PNG.", "ok");
+        document.getElementById("copy").disabled = false;
+        document.getElementById("dl").disabled = false;
+        window.__lastAddr = addr;
+        window.__lastCanvas = canvas;
+      } catch (e) {
+        setStatus("Could not build QR: " + (e && e.message ? e.message : e), "err");
+      }
+    }
+
+    document.getElementById("gen").addEventListener("click", generate);
+    document.getElementById("address").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") generate();
+    });
+    document.getElementById("copy").addEventListener("click", async function () {
+      if (!window.__lastAddr) return;
+      try {
+        await navigator.clipboard.writeText(window.__lastAddr);
+        setStatus("Address copied.", "ok");
+      } catch (_) {
+        setStatus("Copy failed — select the address text manually.", "err");
+      }
+    });
+    document.getElementById("dl").addEventListener("click", function () {
+      if (!window.__lastCanvas) return;
+      const a = document.createElement("a");
+      a.download = "usdt-wallet-qr.png";
+      a.href = window.__lastCanvas.toDataURL("image/png");
+      a.click();
+    });
+  </script>
+</body>
+</html>
