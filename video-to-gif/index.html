@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Video to GIF Converter Online Free (No Watermark) + GIF Compressor</title>
+  <meta name="description" content="Free video to GIF converter online with no watermark. Turn MP4, WebM or MOV clips into GIFs and compress GIFs right in your browser. No upload, no signup." />
+  <link rel="canonical" href="https://nerosaa.github.io/video-to-gif/" />
+  <style>
+    :root { font-family: system-ui, sans-serif; color: #0f172a; background: #f8fafc; }
+    body { max-width: 760px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+    h1 { font-size: 1.45rem; margin-bottom: .35rem; }
+    h2 { font-size: 1.1rem; margin-top: 1.6rem; }
+    .muted { color: #64748b; }
+    label { display: block; font-size: .9rem; margin: .8rem 0 .25rem; }
+    input, select { width: 100%; max-width: 280px; padding: .5rem .6rem; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; box-sizing: border-box; }
+    input[type=file] { max-width: 100%; }
+    button { margin-top: .8rem; padding: .5rem .9rem; border: 1px solid #0f766e; background: #fff; color: #0f766e; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.1rem; margin: 1.1rem 0; }
+    .buy { display: inline-block; margin-top: .5rem; background: #0f766e; color: #fff !important; text-decoration: none; padding: .55rem .9rem; border-radius: 8px; font-weight: 600; }
+    a { color: #0369a1; }
+    .result { font-weight: 600; margin-top: .75rem; }
+    .tabs { display: flex; gap: .5rem; margin-top: 1rem; }
+    .tabs button { margin-top: 0; }
+    .tabs button[aria-selected=true] { background: #0f766e; color: #fff; }
+    .row { display: flex; flex-wrap: wrap; gap: 0 1rem; }
+    .row > div { flex: 1 1 160px; }
+    progress { width: 100%; height: 14px; margin-top: .8rem; }
+    .err { color: #b91c1c; font-weight: 600; }
+    .out img { max-width: 100%; margin-top: .8rem; border: 1px solid #e2e8f0; border-radius: 6px; background: repeating-conic-gradient(#f1f5f9 0 25%, #fff 0 50%) 0 0/16px 16px; }
+    [hidden] { display: none !important; }
+    footer { margin-top: 2rem; font-size: .85rem; color: #64748b; }
+  </style>
+</head>
+<body>
+  <p><a href="../">← All tools</a></p>
+  <h1>Free video to GIF converter &amp; GIF compressor</h1>
+  <p class="muted">Convert MP4, WebM or MOV clips to GIF and shrink big GIFs. <strong>No watermark</strong>, no signup. Everything runs in your browser (FFmpeg compiled to WebAssembly) — your files are never uploaded.</p>
+
+  <p id="unsupported" class="err" hidden>Your browser can't run this tool (needs WebAssembly and module Web Workers). Please try a recent Chrome, Edge, Firefox or Safari on desktop.</p>
+
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" id="tab-v" aria-selected="true">Video → GIF</button>
+    <button type="button" role="tab" id="tab-c" aria-selected="false">Compress GIF</button>
+  </div>
+
+  <section id="panel-v" class="card">
+    <label for="vfile">Video file (MP4, WebM, MOV)</label>
+    <input id="vfile" type="file" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v" />
+    <p id="vinfo" class="muted"></p>
+    <div class="row">
+      <div><label for="vstart">Start time (seconds)</label><input id="vstart" type="number" min="0" step="0.1" value="0" /></div>
+      <div><label for="vdur">Duration (seconds, max 15)</label><input id="vdur" type="number" min="0.5" max="15" step="0.5" value="5" /></div>
+    </div>
+    <div class="row">
+      <div><label for="vwidth">Width</label>
+        <select id="vwidth"><option value="320">320 px</option><option value="480" selected>480 px</option><option value="640">640 px</option></select></div>
+      <div><label for="vfps">Frames per second</label>
+        <select id="vfps"><option>5</option><option>8</option><option selected>10</option><option>12</option><option>15</option></select></div>
+    </div>
+    <button id="vgo" type="button">Convert to GIF</button>
+    <div class="status"></div>
+    <div class="out"></div>
+  </section>
+
+  <section id="panel-c" class="card" hidden>
+    <label for="cfile">GIF file</label>
+    <input id="cfile" type="file" accept="image/gif,.gif" />
+    <p id="cinfo" class="muted"></p>
+    <div class="row">
+      <div><label for="cscale">Width scale</label>
+        <select id="cscale"><option value="1">100% (keep size)</option><option value="0.75" selected>75%</option><option value="0.5">50%</option><option value="0.33">33%</option></select></div>
+      <div><label for="cfps">Frames per second</label>
+        <select id="cfps"><option value="0">Keep original</option><option>15</option><option selected>10</option><option>8</option><option>5</option></select></div>
+      <div><label for="ccolors">Colors</label>
+        <select id="ccolors"><option>256</option><option selected>128</option><option>64</option><option>32</option></select></div>
+    </div>
+    <button id="cgo" type="button">Compress GIF</button>
+    <div class="status"></div>
+    <div class="out"></div>
+  </section>
+
+  <p class="muted" style="font-size:.9rem">First run downloads the FFmpeg engine (~31 MB) from a public CDN; after that your browser caches it. Long or 4K videos may run out of memory — trim to the part you need.</p>
+
+  <div class="card">
+    <p><strong>Need more? Paid packs</strong> from the same maker (pay in USDT):</p>
+    <a class="buy" href="https://www.getly.store/product/usdt-agent-skills-pack-claude-cursor-mcp-for-crypto-freelancers">USDT Agent Skills Pack — $9</a>
+    <p class="muted" style="margin-top:.7rem">Or the <a href="https://www.getly.store/product/usdt-invoice-kit-offline-freelancer-invoice-prompt-pack">USDT Invoice Kit — $7</a> (offline invoice template + AI prompts).</p>
+    <p class="muted">Windows desktop app (unlimited length) coming soon.</p>
+  </div>
+
+  <footer>
+    <p>Client-side only. Your videos and GIFs never leave your browser. No tracking. Powered by <a href="https://github.com/ffmpegwasm/ffmpeg.wasm">ffmpeg.wasm</a> (<a href="./vendor/LICENSES.txt">licenses</a>).</p>
+    <p><a href="https://www.getly.store/store/nero-tools-mvb64f1s">NERO Tools on Getly</a> · <a href="../">All free tools</a></p>
+  </footer>
+
+  <script type="module">
+    import { FFmpeg } from "./vendor/ffmpeg/index.js";
+    import { fetchFile, toBlobURL } from "./vendor/util/index.js";
+
+    const $ = id => document.getElementById(id);
+    const MAX_DUR = 15, MAX_BYTES = 400 * 1024 * 1024;
+    const CORE_BASES = [
+      "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm",
+      "https://unpkg.com/@ffmpeg/core@0.12.10/dist/esm",
+    ];
+    const fmt = b => b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(2) + " MB";
+
+    const supported = typeof WebAssembly === "object" && typeof Worker === "function" && typeof Blob === "function";
+    if (!supported) { $("unsupported").hidden = false; $("vgo").disabled = $("cgo").disabled = true; }
+
+    // Tabs
+    const tabs = { v: [$("tab-v"), $("panel-v")], c: [$("tab-c"), $("panel-c")] };
+    for (const k of Object.keys(tabs)) tabs[k][0].addEventListener("click", () => {
+      for (const j of Object.keys(tabs)) { tabs[j][0].setAttribute("aria-selected", j === k); tabs[j][1].hidden = j !== k; }
+    });
+
+    let ffmpeg = null, loading = null, busy = false, logTail = [];
+    function ui(panel) {
+      const status = panel.querySelector(".status"), out = panel.querySelector(".out");
+      return {
+        out,
+        msg(text, cls = "muted") { status.innerHTML = ""; const p = document.createElement("p"); p.className = cls; p.textContent = text; status.appendChild(p); return p; },
+        bar() { let pr = status.querySelector("progress"); if (!pr) { pr = document.createElement("progress"); pr.max = 1; status.appendChild(pr); } return pr; },
+      };
+    }
+
+    // Own downloader: CDNs may send compressed bodies, so Content-Length is only a hint (no strict size check).
+    async function fetchBlobURL(url, type, onProgress) {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${url}`);
+      const enc = resp.headers.get("content-encoding");
+      const total = enc && enc !== "identity" ? 32232419 : parseInt(resp.headers.get("content-length") || "32232419");
+      if (!resp.body || !resp.body.getReader) return URL.createObjectURL(new Blob([await resp.arrayBuffer()], { type }));
+      const reader = resp.body.getReader(), chunks = []; let received = 0;
+      for (;;) { const { done, value } = await reader.read(); if (done) break; chunks.push(value); received += value.length; onProgress(received, total); }
+      return URL.createObjectURL(new Blob(chunks, { type }));
+    }
+
+    async function getFFmpeg(u) {
+      if (ffmpeg) return ffmpeg;
+      if (loading) return loading;
+      loading = (async () => {
+        let lastErr;
+        for (const base of CORE_BASES) {
+          try {
+            const p = u.msg("Downloading FFmpeg engine (one time, ~31 MB)…");
+            const bar = u.bar(); bar.removeAttribute("value");
+            const coreURL = await toBlobURL(`${base}/ffmpeg-core.js`, "text/javascript");
+            const wasmURL = await fetchBlobURL(`${base}/ffmpeg-core.wasm`, "application/wasm", (received, total) => {
+              if (total > 0) bar.value = Math.min(1, received / total);
+              p.textContent = `Downloading FFmpeg engine… ${fmt(received)}` + (total > 0 ? ` / ${fmt(total)}` : "");
+            });
+            const f = new FFmpeg();
+            f.on("log", ({ message }) => { logTail.push(message); if (logTail.length > 30) logTail.shift(); });
+            await f.load({ coreURL, wasmURL });
+            ffmpeg = f; return f;
+          } catch (e) { lastErr = e; console.warn("ffmpeg load failed from", base, e); }
+        }
+        loading = null;
+        throw new Error("Could not load the FFmpeg engine (" + (lastErr && lastErr.message || lastErr) + "). Check your connection or try another browser.");
+      })();
+      return loading;
+    }
+
+    function showResult(u, data, name, beforeBytes) {
+      const blob = new Blob([data.buffer ? data : new Uint8Array(data)], { type: "image/gif" });
+      const url = URL.createObjectURL(blob);
+      u.out.innerHTML = "";
+      const r = document.createElement("p"); r.className = "result";
+      r.textContent = beforeBytes ? `Done: ${fmt(beforeBytes)} → ${fmt(blob.size)} (${Math.round(100 - blob.size / beforeBytes * 100)}% smaller)` : `Done: GIF is ${fmt(blob.size)}`;
+      if (beforeBytes && blob.size >= beforeBytes) r.textContent = `Done: ${fmt(beforeBytes)} → ${fmt(blob.size)} (not smaller — try a lower width, fps or colors)`;
+      const img = document.createElement("img"); img.src = url; img.alt = "GIF preview";
+      const a = document.createElement("a"); a.href = url; a.download = name; a.className = "buy dl"; a.textContent = "Download GIF";
+      a.setAttribute("data-size", blob.size);
+      u.out.append(r, a, document.createElement("br"), img);
+    }
+
+    async function run(panelId, btn, build) {
+      if (busy) return; busy = true; btn.disabled = true;
+      const u = ui($(panelId));
+      u.out.innerHTML = "";
+      try {
+        const job = await build(u);
+        if (!job) return;
+        const f = await getFFmpeg(u);
+        const p = u.msg(job.label + "…"); const bar = u.bar(); bar.value = 0;
+        const onProg = ({ progress }) => { if (progress >= 0 && progress <= 1) { bar.value = progress; p.textContent = `${job.label}… ${Math.round(progress * 100)}%`; } };
+        f.on("progress", onProg);
+        logTail = [];
+        try {
+          await f.writeFile(job.inName, await fetchFile(job.file));
+          const code = await f.exec(job.args);
+          const data = await f.readFile("out.gif").catch(() => null);
+          if (code !== 0 || !data || !data.length) throw new Error("FFmpeg could not process this file. " + (logTail.slice(-3).join(" ") || ""));
+          u.msg("");
+          showResult(u, data, job.outName, job.before);
+        } finally {
+          f.off("progress", onProg);
+          await f.deleteFile(job.inName).catch(() => {});
+          await f.deleteFile("out.gif").catch(() => {});
+        }
+      } catch (e) {
+        console.error(e);
+        u.msg("Error: " + (e && e.message || e), "err");
+      } finally { busy = false; btn.disabled = false; }
+    }
+
+    const ext = n => (n.match(/\.([a-z0-9]{1,5})$/i) || [, "mp4"])[1].toLowerCase();
+    const base = n => n.replace(/\.[^.]+$/, "").replace(/[^\w\-]+/g, "_").slice(0, 60) || "output";
+
+    // Video info
+    $("vfile").addEventListener("change", () => {
+      const file = $("vfile").files[0]; $("vinfo").textContent = "";
+      if (!file) return;
+      const v = document.createElement("video"); v.preload = "metadata"; v.muted = true;
+      const url = URL.createObjectURL(file);
+      v.onloadedmetadata = () => { $("vinfo").textContent = `${file.name} — ${fmt(file.size)}, ${v.duration.toFixed(1)} s, ${v.videoWidth}×${v.videoHeight}`; $("vinfo").dataset.dur = v.duration; URL.revokeObjectURL(url); };
+      v.onerror = () => { $("vinfo").textContent = `${file.name} — ${fmt(file.size)} (preview not available in this browser; conversion may still work)`; URL.revokeObjectURL(url); };
+      v.src = url;
+    });
+    $("cfile").addEventListener("change", () => {
+      const file = $("cfile").files[0]; $("cinfo").textContent = file ? `${file.name} — ${fmt(file.size)}` : "";
+    });
+
+    $("vgo").addEventListener("click", () => run("panel-v", $("vgo"), async u => {
+      const file = $("vfile").files[0];
+      if (!file) { u.msg("Pick a video file first.", "err"); return null; }
+      if (file.size > MAX_BYTES) { u.msg(`This file is ${fmt(file.size)}. The browser version handles up to ${fmt(MAX_BYTES)} — trim it first.`, "err"); return null; }
+      let start = Math.max(0, Number($("vstart").value) || 0);
+      let dur = Math.min(MAX_DUR, Math.max(0.1, Number($("vdur").value) || 5));
+      $("vdur").value = dur;
+      const total = Number($("vinfo").dataset.dur);
+      if (total && start >= total) { u.msg(`Start time is past the end of the video (${total.toFixed(1)} s).`, "err"); return null; }
+      const w = Number($("vwidth").value), fps = Number($("vfps").value);
+      const inName = "in." + ext(file.name);
+      return {
+        file, inName, label: "Converting to GIF", outName: base(file.name) + ".gif",
+        args: ["-ss", String(start), "-t", String(dur), "-i", inName,
+          "-vf", `fps=${fps},scale=${w}:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=256:stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle`,
+          "-loop", "0", "-an", "out.gif"],
+      };
+    }));
+
+    $("cgo").addEventListener("click", () => run("panel-c", $("cgo"), async u => {
+      const file = $("cfile").files[0];
+      if (!file) { u.msg("Pick a GIF file first.", "err"); return null; }
+      if (file.size > MAX_BYTES) { u.msg(`This file is ${fmt(file.size)} — too big for the browser version.`, "err"); return null; }
+      const s = Number($("cscale").value), fps = Number($("cfps").value), colors = Number($("ccolors").value);
+      const filters = [];
+      if (fps > 0) filters.push(`fps=${fps}`);
+      if (s !== 1) filters.push(`scale=trunc(iw*${s}/2)*2:-2:flags=lanczos`);
+      filters.push(`split[s0][s1];[s0]palettegen=max_colors=${colors}:stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle`);
+      return {
+        file, inName: "in.gif", label: "Compressing GIF", outName: base(file.name) + "-compressed.gif", before: file.size,
+        args: ["-i", "in.gif", "-vf", filters.join(","), "-loop", "0", "out.gif"],
+      };
+    }));
+  </script>
+</body>
+</html>
