@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>USDT ERC20 Gas Fee Calculator — Estimate Ethereum USDT Transfer Cost</title>
+  <meta name="description" content="Free USDT ERC20 gas fee calculator. Enter gas price (gwei), gas limit and ETH price to estimate the cost of sending USDT on Ethereum in ETH and USD." />
+  <link rel="canonical" href="https://nerosaa.github.io/usdt-erc20-gas-fee-calculator/" />
+  <style>
+    :root { font-family: system-ui, sans-serif; color: #0f172a; background: #f8fafc; }
+    body { max-width: 760px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+    h1 { font-size: 1.45rem; margin-bottom: .35rem; }
+    h2 { font-size: 1.1rem; margin-top: 1.6rem; }
+    .muted { color: #64748b; }
+    label { display: block; font-size: .9rem; margin: .8rem 0 .25rem; }
+    input, select, textarea { width: 100%; max-width: 280px; padding: .5rem .6rem; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
+    textarea { max-width: 100%; font-family: ui-monospace, monospace; }
+    button { margin-top: .8rem; padding: .5rem .9rem; border: 1px solid #0f766e; background: #fff; color: #0f766e; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.1rem; margin: 1.1rem 0; }
+    .buy { display: inline-block; margin-top: .5rem; background: #0f766e; color: #fff !important; text-decoration: none; padding: .55rem .9rem; border-radius: 8px; font-weight: 600; }
+    a { color: #0369a1; }
+    .result { font-weight: 600; margin-top: .75rem; }
+    footer { margin-top: 2rem; font-size: .85rem; color: #64748b; }
+  </style>
+</head>
+<body>
+  <p><a href="../">← All tools</a></p>
+  <h1>USDT ERC20 gas fee calculator</h1>
+  <p class="muted">Estimate what a USDT transfer on Ethereum costs. You enter the numbers from your wallet — this page does not fetch live data.</p>
+
+  <div class="card">
+    <label for="gwei">Gas price (gwei)</label>
+    <input id="gwei" type="number" min="0" step="0.1" value="5" />
+    <label for="limit">Gas limit</label>
+    <input id="limit" type="number" min="21000" step="1000" value="65000" />
+    <p class="muted" style="font-size:.85rem">~65,000 is typical for a USDT (ERC20) transfer. First-time sends to a new address can use more.</p>
+    <label for="eth">ETH price (USD)</label>
+    <input id="eth" type="number" min="0" step="1" value="3000" />
+    <label for="amt">USDT amount you are sending (optional)</label>
+    <input id="amt" type="number" min="0" step="1" value="100" />
+    <p class="result" id="result"></p>
+  </div>
+
+  <h2>How the fee is calculated</h2>
+  <p>Fee (ETH) = gas price (gwei) × gas limit ÷ 1,000,000,000. Fee (USD) = fee in ETH × ETH price. Your wallet usually shows the current gas price; the actual gas used is often a bit below the limit.</p>
+
+  <h2>ERC20 vs TRC20 vs BEP20</h2>
+  <p>For small payouts, ERC20 is usually the most expensive way to move USDT. TRC20 (Tron) and BEP20 (BNB Chain) are often much cheaper. See the <a href="../usdt-network-fees/">USDT network fees comparison</a> to pick a chain — and always confirm with the payer which network they will send on.</p>
+
+  <div class="card">
+    <p><strong>Get paid in USDT with AI agents?</strong> Ready-made skills for Claude / Cursor / MCP: invoice requests, address safety checks, payment checks.</p>
+    <a class="buy" href="https://www.getly.store/product/usdt-agent-skills-pack-claude-cursor-mcp-for-crypto-freelancers">Get USDT Agent Skills Pack — $9</a>
+    <p class="muted" style="margin-top:.7rem">Or the <a href="https://www.getly.store/product/usdt-invoice-kit-offline-freelancer-invoice-prompt-pack">USDT Invoice Kit — $7</a> (offline invoice + prompts).</p>
+  </div>
+
+  <footer>
+    <p>Client-side only. Nothing you type leaves your browser. No tracking.</p>
+    <p><a href="https://www.getly.store/store/nero-tools-mvb64f1s">NERO Tools on Getly</a> · <a href="../">All free tools</a></p>
+  </footer>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    function render() {
+      const gwei = Math.max(0, Number($("gwei").value) || 0);
+      const limit = Math.max(0, Number($("limit").value) || 0);
+      const eth = Math.max(0, Number($("eth").value) || 0);
+      const amt = Math.max(0, Number($("amt").value) || 0);
+      const feeEth = gwei * limit / 1e9;
+      const feeUsd = feeEth * eth;
+      let txt = "Estimated fee: " + feeEth.toFixed(6) + " ETH ≈ $" + feeUsd.toFixed(2);
+      if (amt > 0) txt += " (" + (feeUsd / amt * 100).toFixed(2) + "% of " + amt + " USDT)";
+      $("result").textContent = txt + ".";
+    }
+    ["gwei","limit","eth","amt"].forEach(id => $(id).addEventListener("input", render));
+    render();
+  </script>
+</body>
+</html>
