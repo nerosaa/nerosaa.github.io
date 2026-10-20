@@ -7,3 +7,4 @@ Free client-side tools for crypto freelancers. Each page links to Getly products
 - `/usdt-erc20-gas-fee-calculator/` — ERC20 USDT gas fee calculator
 - `/usdt-to-aed-calculator/` — USDT ⇄ AED converter (manual rate)
 - `/invoice-number-generator/` — sequential invoice numbers
+- `/video-to-gif/` — free video to GIF converter + GIF compressor (ffmpeg.wasm, client-side, no watermark)
