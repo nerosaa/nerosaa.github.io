@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>USDT APY Calculator — Compound Interest Math with APR to APY Conversion</title>
+  <meta name="description" content="Free USDT APY calculator: compound-interest math for any amount, rate and period. Daily, weekly, monthly or yearly compounding, optional monthly top-up, per-period table and APR to APY conversion. Math only." />
+  <link rel="canonical" href="https://nerosaa.github.io/usdt-apy-calculator/" />
+  <style>
+    :root { font-family: system-ui, sans-serif; color: #0f172a; background: #f8fafc; }
+    body { max-width: 760px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+    h1 { font-size: 1.45rem; margin-bottom: .35rem; }
+    h2 { font-size: 1.1rem; margin-top: 1.6rem; }
+    .muted { color: #64748b; }
+    label { display: block; font-size: .9rem; margin: .8rem 0 .25rem; }
+    input, select, textarea { width: 100%; max-width: 280px; padding: .5rem .6rem; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
+    textarea { max-width: 100%; font-family: ui-monospace, monospace; }
+    button { margin-top: .8rem; padding: .5rem .9rem; border: 1px solid #0f766e; background: #fff; color: #0f766e; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.1rem; margin: 1.1rem 0; }
+    .buy { display: inline-block; margin-top: .5rem; background: #0f766e; color: #fff !important; text-decoration: none; padding: .55rem .9rem; border-radius: 8px; font-weight: 600; }
+    a { color: #0369a1; }
+    .result { font-weight: 600; margin-top: .75rem; }
+    footer { margin-top: 2rem; font-size: .85rem; color: #64748b; }
+    .row { display: flex; gap: .6rem; flex-wrap: wrap; }
+    .row > div { flex: 1 1 130px; }
+    .note { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: .55rem .75rem; font-size: .9rem; }
+    .tablewrap { max-height: 360px; overflow: auto; border: 1px solid #e2e8f0; border-radius: 8px; margin-top: .6rem; }
+    table { border-collapse: collapse; width: 100%; font-size: .85rem; font-variant-numeric: tabular-nums; }
+    th, td { padding: .35rem .5rem; border-bottom: 1px solid #f1f5f9; text-align: right; white-space: nowrap; }
+    th { position: sticky; top: 0; background: #f8fafc; }
+    th:first-child, td:first-child { text-align: left; }
+  </style>
+</head>
+<body>
+  <p><a href="../">← All tools</a></p>
+  <h1>USDT APY calculator</h1>
+  <p class="muted">Compound-interest math for a USDT (or any) balance: enter an amount, a rate, a period and a compounding frequency, and see the final amount, interest, a per-period table and the APR ⇄ APY conversion.</p>
+  <p class="note"><strong>Math only, not financial advice; rates are whatever you enter.</strong> This page does not know or suggest any rate, product or platform, and nothing here is a promise of returns.</p>
+
+  <div class="card">
+    <label for="principal">Starting amount (USDT)</label>
+    <input id="principal" type="number" min="0" step="any" value="1000" />
+    <div class="row">
+      <div><label for="rate">Rate (%)</label><input id="rate" type="number" min="0" step="any" value="5" /></div>
+      <div><label for="ratetype">Rate type</label><select id="ratetype"><option value="apy" selected>APY (effective yearly)</option><option value="apr">APR (nominal yearly)</option></select></div>
+    </div>
+    <div class="row">
+      <div><label for="dur">Duration</label><input id="dur" type="number" min="0" step="1" value="12" /></div>
+      <div><label for="unit">Unit</label><select id="unit"><option value="days">days</option><option value="months" selected>months</option><option value="years">years</option></select></div>
+    </div>
+    <label for="freq">Compounding frequency</label>
+    <select id="freq"><option value="365">Daily (365/yr)</option><option value="52">Weekly (52/yr)</option><option value="12" selected>Monthly (12/yr)</option><option value="1">Yearly (1/yr)</option></select>
+    <label for="topup">Optional monthly top-up (USDT, added at the end of each month)</label>
+    <input id="topup" type="number" min="0" step="any" value="0" />
+    <p class="result" id="result"></p>
+    <p class="muted" id="detail" style="font-size:.9rem"></p>
+  </div>
+
+  <h2>Per-period table</h2>
+  <p class="muted" id="tablenote" style="font-size:.85rem"></p>
+  <div class="tablewrap"><table id="tbl"><thead><tr><th>Period</th><th>Day</th><th>Top-ups</th><th>Interest</th><th>Balance</th></tr></thead><tbody></tbody></table></div>
+
+  <h2>APR ⇄ APY converter</h2>
+  <div class="card">
+    <div class="row">
+      <div><label for="cvrate">Rate (%)</label><input id="cvrate" type="number" min="0" step="any" value="5" /></div>
+      <div><label for="cvtype">This rate is</label><select id="cvtype"><option value="apr" selected>APR → show APY</option><option value="apy">APY → show APR</option></select></div>
+    </div>
+    <div class="tablewrap" style="max-height:none"><table id="cvtbl"><thead><tr><th>Compounding</th><th>APR</th><th>APY</th></tr></thead><tbody></tbody></table></div>
+  </div>
+
+  <h2>How it works</h2>
+  <ul>
+    <li>APR is the nominal yearly rate; APY is the effective yearly rate after compounding. APY = (1 + APR/n)<sup>n</sup> − 1, and APR = n × ((1 + APY)<sup>1/n</sup> − 1), where n is compounding periods per year.</li>
+    <li>Rate per period: APR/n if you enter an APR, or (1 + APY)<sup>1/n</sup> − 1 if you enter an APY. Without top-ups, final = start × (1 + rate per period)<sup>periods</sup>.</li>
+    <li>Time: 1 year = 365 days = 12 months; a month is 365/12 ≈ 30.42 days. A leftover partial period at the end is compounded fractionally, so results stay consistent with the yearly rate.</li>
+    <li>Top-ups are added at the end of each month and start compounding from that moment.</li>
+  </ul>
+  <p class="muted">Math only, not financial advice; rates are whatever you enter. Real balances depend on fees, rate changes and rounding that this page does not model.</p>
+
+  <div class="card">
+    <p><strong>Freelancing for USDT?</strong> A tools pack for crypto freelancers: ready-made AI agent skills for Claude / Cursor / MCP for invoice requests, wallet address safety and payment checks.</p>
+    <a class="buy" href="https://www.getly.store/product/usdt-agent-skills-pack-claude-cursor-mcp-for-crypto-freelancers">Get USDT Agent Skills Pack — $9</a>
+    <p class="muted" style="margin-top:.7rem">Or the <a href="https://www.getly.store/product/usdt-invoice-kit-offline-freelancer-invoice-prompt-pack">USDT Invoice Kit — $7</a> (offline invoice + prompts).</p>
+  </div>
+
+  <footer>
+    <p>Client-side only. Nothing you type leaves your browser. No tracking.</p>
+    <p><a href="https://www.getly.store/store/nero-tools-mvb64f1s">NERO Tools on Getly</a> · <a href="../">All free tools</a></p>
+  </footer>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const FREQ = { 365: "Daily", 52: "Weekly", 12: "Monthly", 1: "Yearly" };
+    const EPS = 1e-9;
+    function aprToApy(apr, n) { return Math.pow(1 + apr / n, n) - 1; }
+    function apyToApr(apy, n) { return n * (Math.pow(1 + apy, 1 / n) - 1); }
+    function num(id) { const v = Number($(id).value); return isFinite(v) && v > 0 ? v : 0; }
+    function fmt(x, d) { return x.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d }); }
+
+    // Pure calculation, exposed for testing.
+    function simulate(o) {
+      const n = o.n, years = o.years;
+      const rp = o.type === "apr" ? o.rate / n : Math.pow(1 + o.rate, 1 / n) - 1;
+      const g = Math.pow(1 + rp, n); // effective yearly growth factor
+      const events = []; // [time, kind]
+      const full = Math.floor(years * n + EPS);
+      for (let k = 1; k <= full; k++) events.push([k / n, "p", k]);
+      if (years - full / n > EPS) events.push([years, "p", full + 1]);
+      const months = Math.floor(years * 12 + EPS);
+      for (let m = 1; m <= months; m++) events.push([m / 12, "d"]);
+      events.sort((a, b) => a[0] - b[0] || (a[1] === "p" ? -1 : 1)); // same time: credit interest, then deposit
+      let bal = o.principal, t = 0, periodStart = o.principal, depInPeriod = 0, deposited = o.principal, lastP = -1;
+      const rows = [];
+      for (const [time, kind, k] of events) {
+        bal *= Math.pow(g, time - t); t = time;
+        if (kind === "p") {
+          rows.push({ period: k, day: time * 365, topups: depInPeriod, interest: bal - periodStart - depInPeriod, balance: bal });
+          periodStart = bal; depInPeriod = 0; lastP = time;
+        } else {
+          bal += o.topup; deposited += o.topup;
+          if (rows.length && Math.abs(time - lastP) < EPS) { const last = rows[rows.length - 1]; last.topups += o.topup; last.balance = bal; periodStart = bal; }
+          else depInPeriod += o.topup;
+        }
+      }
+      return { final: bal, deposited, interest: bal - deposited, rp, apy: g - 1, apr: n * rp, rows };
+    }
+    window.simulate = simulate; window.aprToApy = aprToApy; window.apyToApr = apyToApr;
+
+    function render() {
+      const unit = $("unit").value, dur = num("dur");
+      const years = unit === "days" ? dur / 365 : unit === "months" ? dur / 12 : dur;
+      const n = Number($("freq").value);
+      const r = simulate({ principal: num("principal"), rate: num("rate") / 100, type: $("ratetype").value, years: Math.min(years, 100), n, topup: num("topup") });
+      $("result").textContent = "Final amount: " + fmt(r.final, 2) + " USDT · Interest: " + fmt(r.interest, 2) + " USDT";
+      $("detail").textContent = "Total put in: " + fmt(r.deposited, 2) + " USDT · Rate per period: " + fmt(r.rp * 100, 6) + "% · Effective APY: " + fmt(r.apy * 100, 4) + "% · Nominal APR: " + fmt(r.apr * 100, 4) + "% (" + FREQ[n].toLowerCase() + " compounding)" + (years > 100 ? " · Duration capped at 100 years." : "");
+      // group rows if too many
+      let rows = r.rows, label = { 365: "Day", 52: "Week", 12: "Month", 1: "Year" }[n];
+      if (rows.length > 600) {
+        const byMonth = n > 12 && years * 12 <= 600;
+        const len = byMonth ? 365 / 12 : 365, out = [];
+        let acc = null;
+        for (const row of rows) {
+          const key = Math.max(1, Math.ceil(row.day / len - EPS));
+          if (!acc || acc.period !== key) { acc = { period: key, day: 0, topups: 0, interest: 0, balance: 0 }; out.push(acc); }
+          acc.day = row.day; acc.topups += row.topups; acc.interest += row.interest; acc.balance = row.balance;
+        }
+        rows = out; label = byMonth ? "Month" : "Year";
+        $("tablenote").textContent = "Too many periods to list one by one, so rows are grouped by " + label.toLowerCase() + " (interest is still compounded " + FREQ[n].toLowerCase() + ").";
+      } else $("tablenote").textContent = "One row per compounding period (" + FREQ[n].toLowerCase() + ").";
+      const tb = $("tbl").tBodies[0]; tb.textContent = "";
+      const frag = document.createDocumentFragment();
+      for (const row of rows) {
+        const tr = document.createElement("tr");
+        [label + " " + row.period, fmt(row.day, row.day % 1 ? 1 : 0), fmt(row.topups, 2), fmt(row.interest, 2), fmt(row.balance, 2)].forEach(v => { const td = document.createElement("td"); td.textContent = v; tr.appendChild(td); });
+        frag.appendChild(tr);
+      }
+      tb.appendChild(frag);
+    }
+    function renderConv() {
+      const x = num("cvrate") / 100, type = $("cvtype").value;
+      const tb = $("cvtbl").tBodies[0]; tb.textContent = "";
+      [365, 52, 12, 1].forEach(n => {
+        const apr = type === "apr" ? x : apyToApr(x, n), apy = type === "apr" ? aprToApy(x, n) : x;
+        const tr = document.createElement("tr");
+        [FREQ[n], fmt(apr * 100, 4) + "%", fmt(apy * 100, 4) + "%"].forEach(v => { const td = document.createElement("td"); td.textContent = v; tr.appendChild(td); });
+        tb.appendChild(tr);
+      });
+    }
+    ["principal","rate","ratetype","dur","unit","freq","topup"].forEach(id => { $(id).addEventListener("input", render); $(id).addEventListener("change", render); });
+    ["cvrate","cvtype"].forEach(id => { $(id).addEventListener("input", renderConv); $(id).addEventListener("change", renderConv); });
+    render(); renderConv();
+  </script>
+</body>
+</html>
