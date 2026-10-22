@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Influencer Invoice Generator (Free) — Brand Deal Invoice Template, Print to PDF</title>
+  <meta name="description" content="Free invoice generator for influencers and creators. Build a brand-deal invoice with deliverables (posts, reels, stories), usage rights, payment terms, tax and currency (USD, USDT, EUR…), then print or save as PDF." />
+  <link rel="canonical" href="https://nerosaa.github.io/influencer-invoice-generator/" />
+  <style>
+    :root { font-family: system-ui, sans-serif; color: #0f172a; background: #f8fafc; }
+    body { max-width: 760px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+    h1 { font-size: 1.45rem; margin-bottom: .35rem; }
+    h2 { font-size: 1.1rem; margin-top: 1.6rem; }
+    .muted { color: #64748b; }
+    label { display: block; font-size: .9rem; margin: .8rem 0 .25rem; }
+    input, select, textarea { width: 100%; max-width: 280px; padding: .5rem .6rem; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
+    textarea { max-width: 100%; font-family: ui-monospace, monospace; }
+    button { margin-top: .8rem; padding: .5rem .9rem; border: 1px solid #0f766e; background: #fff; color: #0f766e; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.1rem; margin: 1.1rem 0; }
+    .buy { display: inline-block; margin-top: .5rem; background: #0f766e; color: #fff !important; text-decoration: none; padding: .55rem .9rem; border-radius: 8px; font-weight: 600; }
+    a { color: #0369a1; }
+    .result { font-weight: 600; margin-top: .75rem; }
+    footer { margin-top: 2rem; font-size: .85rem; color: #64748b; }
+    .row { display: flex; gap: .6rem; flex-wrap: wrap; }
+    .row > div { flex: 1 1 160px; }
+    .row input, .row select { max-width: 100%; }
+    textarea.plain { font-family: inherit; }
+    .line { display: grid; grid-template-columns: 7rem 1fr 4.5rem 6.5rem 2.2rem; gap: .4rem; align-items: center; margin-top: .45rem; }
+    .line input, .line select { max-width: 100%; padding: .4rem .45rem; }
+    .line button { margin: 0; padding: .35rem 0; }
+    @media (max-width: 560px) { .line { grid-template-columns: 1fr 1fr; } .line .desc { grid-column: 1 / -1; } .lhead { display: none; } }
+    #preview { background: #fff; border: 1px solid #cbd5e1; border-radius: 10px; padding: 1.4rem 1.5rem; margin: 1rem 0; font-size: .92rem; overflow-x: auto; }
+    #preview h3 { margin: 0; font-size: 1.4rem; letter-spacing: .04em; }
+    #preview .hd { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    #preview .parties { display: flex; gap: 2rem; flex-wrap: wrap; margin: 1rem 0; }
+    #preview .parties div { flex: 1 1 200px; white-space: pre-line; }
+    #preview .lbl { font-size: .75rem; text-transform: uppercase; color: #64748b; letter-spacing: .05em; }
+    #preview table { width: 100%; border-collapse: collapse; margin-top: .6rem; font-variant-numeric: tabular-nums; }
+    #preview th, #preview td { padding: .4rem .45rem; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; }
+    #preview th.n, #preview td.n { text-align: right; white-space: nowrap; }
+    #preview .totals { margin-left: auto; width: 100%; max-width: 280px; margin-top: .6rem; }
+    #preview .totals td { border: 0; padding: .2rem .45rem; }
+    #preview .grand td { font-weight: 700; border-top: 2px solid #0f172a; }
+    #preview .sec { margin-top: 1rem; white-space: pre-line; }
+    @media print {
+      @page { margin: 14mm; }
+      :root, body { background: #fff; }
+      body { margin: 0; max-width: none; padding: 0; }
+      body > *:not(#preview) { display: none !important; }
+      #preview { border: 0; padding: 0; margin: 0; font-size: 11pt; }
+    }
+  </style>
+</head>
+<body>
+  <p><a href="../">← All tools</a></p>
+  <h1>Influencer invoice generator</h1>
+  <p class="muted">Make a clean invoice for a brand deal: your details, the brand, deliverables (posts, reels, stories…), usage rights, payment terms and tax. The preview updates live; print it or save it as a PDF from your browser.</p>
+
+  <div class="card">
+    <div class="row">
+      <div><label for="num">Invoice number</label><input id="num" type="text" value="INV-2026-001" /></div>
+      <div><label for="date">Invoice date</label><input id="date" type="date" /></div>
+      <div><label for="cur">Currency</label>
+        <select id="cur">
+          <option>USD</option><option>USDT</option><option>USDC</option><option>EUR</option><option>GBP</option><option>CAD</option><option>AUD</option><option>SGD</option><option>AED</option><option>INR</option><option>IDR</option><option>PHP</option><option>NGN</option><option>PKR</option><option>BRL</option><option>MXN</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div><label for="creator">From (creator)</label><textarea id="creator" class="plain" rows="4">Alex Rivera (@alexcreates)
+alex@example.com
+Lisbon, Portugal</textarea></div>
+      <div><label for="brand">Bill to (brand / agency)</label><textarea id="brand" class="plain" rows="4">Glow Skincare Ltd.
+Attn: Marketing Team
+marketing@example.com</textarea></div>
+    </div>
+    <label for="campaign">Campaign / project</label>
+    <input id="campaign" type="text" style="max-width:100%" value="Spring launch campaign" />
+
+    <h2 style="margin-top:1.2rem">Deliverables</h2>
+    <div class="line muted lhead" style="font-size:.8rem"><span>Type</span><span class="desc">Description / platform</span><span>Qty</span><span>Rate</span><span></span></div>
+    <div id="lines"></div>
+    <button id="add" type="button">+ Add deliverable</button>
+
+    <div class="row">
+      <div><label for="usage">Usage rights</label>
+        <select id="usage">
+          <option>Organic posting on creator's channels only</option>
+          <option selected>Brand may repost on its own social channels</option>
+          <option>Paid ads / whitelisting (brand may boost)</option>
+          <option>Full commercial usage (ads, web, email)</option>
+          <option value="">None stated</option>
+        </select>
+      </div>
+      <div><label for="term">Usage term</label>
+        <select id="term"><option>30 days</option><option>60 days</option><option selected>90 days</option><option>6 months</option><option>12 months</option><option>Perpetual</option><option value="">Not stated</option></select>
+      </div>
+    </div>
+    <div class="row">
+      <div><label for="terms">Payment terms</label>
+        <select id="terms"><option value="0">Due on receipt</option><option value="7">Net 7</option><option value="15">Net 15</option><option value="30" selected>Net 30</option><option value="45">Net 45</option><option value="60">Net 60</option></select>
+      </div>
+      <div><label for="tax">Tax % (VAT / GST, 0 if none)</label><input id="tax" type="number" min="0" max="100" step="any" value="0" /></div>
+    </div>
+    <label for="pay">Payment details (bank or wallet + network)</label>
+    <textarea id="pay" class="plain" rows="2">USDT (TRC20): your-wallet-address-here</textarea>
+    <label for="notes">Notes</label>
+    <textarea id="notes" class="plain" rows="3">Thank you for the collaboration! Content goes live within 3 days of approval.</textarea>
+    <p class="result" id="result"></p>
+    <button id="print" type="button">Print / Save as PDF</button> <button id="reset" type="button">Clear saved draft</button>
+    <p class="muted" style="font-size:.85rem">Your draft is saved only in this browser (localStorage). In the print dialog choose “Save as PDF”.</p>
+  </div>
+
+  <h2>Preview</h2>
+  <div id="preview"></div>
+
+  <h2>What to put on an influencer invoice</h2>
+  <ul>
+    <li>Each deliverable on its own line (e.g. 1 × Instagram Reel, 3 × Stories) so the brand can match it to the brief.</li>
+    <li>Usage rights and how long they last — paid-ad usage or whitelisting is usually priced separately.</li>
+    <li>Clear payment terms (Net 30 etc.), the currency, and exactly where to pay. For USDT, state the network (TRC20 / ERC20 / BEP20).</li>
+    <li>A unique, sequential invoice number — try the <a href="../invoice-number-generator/">invoice number generator</a>.</li>
+  </ul>
+  <p class="muted">Not tax or legal advice. Check what your country requires on an invoice.</p>
+
+  <div class="card">
+    <p><strong>Invoicing brands in USDT?</strong> Offline invoice template + AI prompts with chain / wallet address fields.</p>
+    <a class="buy" href="https://www.getly.store/product/usdt-invoice-kit-offline-freelancer-invoice-prompt-pack">Get USDT Invoice Kit — $7</a>
+    <p class="muted" style="margin-top:.7rem">Or the <a href="https://www.getly.store/product/usdt-agent-skills-pack-claude-cursor-mcp-for-crypto-freelancers">USDT Agent Skills Pack — $9</a> for Claude / Cursor / MCP.</p>
+  </div>
+
+  <footer>
+    <p>Client-side only. Nothing you type leaves your browser. No tracking.</p>
+    <p><a href="https://www.getly.store/store/nero-tools-mvb64f1s">NERO Tools on Getly</a> · <a href="../">All free tools</a></p>
+  </footer>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const KEY = "nero-influencer-invoice-v1";
+    const TYPES = ["Post", "Reel", "Story", "Video", "Short", "Live", "Blog", "Other"];
+    const FIELDS = ["num","date","cur","creator","brand","campaign","usage","term","terms","tax","pay","notes"];
+    const DEFAULT_LINES = [
+      { type: "Reel", desc: "Instagram Reel, 30–60s, 1 round of edits", qty: 1, rate: 800 },
+      { type: "Story", desc: "Instagram Story frames with link sticker", qty: 3, rate: 150 }
+    ];
+    function el(tag, attrs, text) { const e = document.createElement(tag); Object.assign(e, attrs || {}); if (text != null) e.textContent = text; return e; }
+    function dec(cur) { return ["IDR"].includes(cur) ? 0 : 2; }
+    function money(x, cur) { const d = dec(cur); return x.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d }) + " " + cur; }
+    function round(x, cur) { const f = Math.pow(10, dec(cur)); return Math.round(x * f) / f; }
+
+    function addLine(l) {
+      const row = el("div", { className: "line" });
+      const type = el("select");
+      type.setAttribute("aria-label", "Type");
+      TYPES.forEach(t => type.appendChild(el("option", { value: t }, t)));
+      type.value = l.type || "Post";
+      const desc = el("input", { type: "text", className: "desc", value: l.desc || "", placeholder: "e.g. TikTok video, 45s" });
+      desc.setAttribute("aria-label", "Description");
+      const qty = el("input", { type: "number", min: "0", step: "1", value: l.qty == null ? 1 : l.qty });
+      qty.setAttribute("aria-label", "Quantity");
+      const rate = el("input", { type: "number", min: "0", step: "any", value: l.rate == null ? 0 : l.rate });
+      rate.setAttribute("aria-label", "Rate");
+      const del = el("button", { type: "button", title: "Remove line" }, "×");
+      del.addEventListener("click", () => { row.remove(); update(); });
+      [type, desc, qty, rate].forEach(i => { i.addEventListener("input", update); i.addEventListener("change", update); row.appendChild(i); });
+      row.appendChild(del);
+      $("lines").appendChild(row);
+    }
+    function readLines() {
+      return [...$("lines").children].map(r => {
+        const [type, desc, qty, rate] = r.querySelectorAll("select, input");
+        return { type: type.value, desc: desc.value, qty: Math.max(0, Number(qty.value) || 0), rate: Math.max(0, Number(rate.value) || 0) };
+      });
+    }
+    function compute(lines, taxPct, cur) {
+      const items = lines.map(l => ({ ...l, amount: round(l.qty * l.rate, cur) }));
+      const subtotal = round(items.reduce((s, i) => s + i.amount, 0), cur);
+      const tax = round(subtotal * Math.max(0, taxPct) / 100, cur);
+      return { items, subtotal, tax, total: round(subtotal + tax, cur) };
+    }
+    window.computeInvoice = compute;
+    function addDays(iso, d) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ""); if (!m) return ""; const t = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3] + d)); return t.toISOString().slice(0, 10); }
+    function localIso(d) { const z = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return z.toISOString().slice(0, 10); }
+
+    function update() {
+      const cur = $("cur").value, taxPct = Math.max(0, Number($("tax").value) || 0);
+      const c = compute(readLines(), taxPct, cur);
+      const termsDays = Number($("terms").value), due = addDays($("date").value, termsDays);
+      const p = $("preview"); p.textContent = "";
+      const hd = el("div", { className: "hd" });
+      const left = el("div"); left.appendChild(el("h3", {}, "INVOICE")); if ($("campaign").value.trim()) left.appendChild(el("div", { className: "muted" }, $("campaign").value.trim()));
+      const right = el("div", { style: "text-align:right" });
+      right.appendChild(el("div", {}, "No. " + ($("num").value.trim() || "—")));
+      right.appendChild(el("div", {}, "Date: " + ($("date").value || "—")));
+      right.appendChild(el("div", {}, "Due: " + (termsDays === 0 ? "On receipt" : (due || "—") + " (Net " + termsDays + ")")));
+      hd.append(left, right); p.appendChild(hd);
+      const parties = el("div", { className: "parties" });
+      const from = el("div"); from.appendChild(el("div", { className: "lbl" }, "From")); from.appendChild(document.createTextNode($("creator").value.trim()));
+      const to = el("div"); to.appendChild(el("div", { className: "lbl" }, "Bill to")); to.appendChild(document.createTextNode($("brand").value.trim()));
+      parties.append(from, to); p.appendChild(parties);
+      const tbl = el("table"), thead = el("thead"), tr = el("tr");
+      [["Deliverable", ""], ["Qty", "n"], ["Rate", "n"], ["Amount", "n"]].forEach(([h, cl]) => tr.appendChild(el("th", { className: cl }, h)));
+      thead.appendChild(tr); tbl.appendChild(thead);
+      const tb = el("tbody");
+      c.items.forEach(i => {
+        const r = el("tr");
+        r.appendChild(el("td", {}, i.type + (i.desc.trim() ? " — " + i.desc.trim() : "")));
+        r.appendChild(el("td", { className: "n" }, String(i.qty)));
+        r.appendChild(el("td", { className: "n" }, money(i.rate, cur)));
+        r.appendChild(el("td", { className: "n" }, money(i.amount, cur)));
+        tb.appendChild(r);
+      });
+      if (!c.items.length) { const r = el("tr"); r.appendChild(el("td", { colSpan: 4, className: "muted" }, "No deliverables yet.")); tb.appendChild(r); }
+      tbl.appendChild(tb); p.appendChild(tbl);
+      const tot = el("table", { className: "totals" });
+      const addTot = (a, b, cls) => { const r = el("tr", { className: cls || "" }); r.appendChild(el("td", {}, a)); r.appendChild(el("td", { className: "n" }, b)); tot.appendChild(r); };
+      addTot("Subtotal", money(c.subtotal, cur));
+      if (taxPct) addTot("Tax (" + taxPct + "%)", money(c.tax, cur));
+      addTot("Total due", money(c.total, cur), "grand");
+      p.appendChild(tot);
+      const usage = $("usage").value, term = $("term").value;
+      if (usage || term) { const s = el("div", { className: "sec" }); s.appendChild(el("div", { className: "lbl" }, "Usage rights")); s.appendChild(document.createTextNode((usage || "As agreed") + (term ? " — term: " + term + " from first posting" : ""))); p.appendChild(s); }
+      if ($("pay").value.trim()) { const s = el("div", { className: "sec" }); s.appendChild(el("div", { className: "lbl" }, "Payment details")); s.appendChild(document.createTextNode($("pay").value.trim())); p.appendChild(s); }
+      if ($("notes").value.trim()) { const s = el("div", { className: "sec" }); s.appendChild(el("div", { className: "lbl" }, "Notes")); s.appendChild(document.createTextNode($("notes").value.trim())); p.appendChild(s); }
+      $("result").textContent = "Total due: " + money(c.total, cur);
+      try { const data = { lines: readLines() }; FIELDS.forEach(f => data[f] = $(f).value); localStorage.setItem(KEY, JSON.stringify(data)); } catch (e) {}
+    }
+
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) {}
+    if (saved) FIELDS.forEach(f => { if (saved[f] != null) $(f).value = saved[f]; });
+    if (!$("date").value) $("date").value = localIso(new Date());
+    ((saved && Array.isArray(saved.lines)) ? saved.lines : DEFAULT_LINES).forEach(addLine);
+    FIELDS.forEach(f => { $(f).addEventListener("input", update); $(f).addEventListener("change", update); });
+    $("add").addEventListener("click", () => { addLine({ type: "Post", qty: 1, rate: 0 }); update(); });
+    $("print").addEventListener("click", () => window.print());
+    $("reset").addEventListener("click", () => { try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); });
+    update();
+  </script>
+</body>
+</html>
