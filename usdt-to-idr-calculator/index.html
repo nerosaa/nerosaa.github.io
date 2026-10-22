@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>USDT to IDR Calculator — Convert USDT and Indonesian Rupiah</title>
+  <meta name="description" content="Free USDT to IDR calculator and converter. Loads the current USDT/IDR rate (or enter your own) and converts USDT to Indonesian rupiah and IDR to USDT instantly. No signup." />
+  <link rel="canonical" href="https://nerosaa.github.io/usdt-to-idr-calculator/" />
+  <style>
+    :root { font-family: system-ui, sans-serif; color: #0f172a; background: #f8fafc; }
+    body { max-width: 760px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+    h1 { font-size: 1.45rem; margin-bottom: .35rem; }
+    h2 { font-size: 1.1rem; margin-top: 1.6rem; }
+    .muted { color: #64748b; }
+    label { display: block; font-size: .9rem; margin: .8rem 0 .25rem; }
+    input, select, textarea { width: 100%; max-width: 280px; padding: .5rem .6rem; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
+    textarea { max-width: 100%; font-family: ui-monospace, monospace; }
+    button { margin-top: .8rem; padding: .5rem .9rem; border: 1px solid #0f766e; background: #fff; color: #0f766e; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1rem 1.1rem; margin: 1.1rem 0; }
+    .buy { display: inline-block; margin-top: .5rem; background: #0f766e; color: #fff !important; text-decoration: none; padding: .55rem .9rem; border-radius: 8px; font-weight: 600; }
+    a { color: #0369a1; }
+    .result { font-weight: 600; margin-top: .75rem; }
+    footer { margin-top: 2rem; font-size: .85rem; color: #64748b; }
+  </style>
+</head>
+<body>
+  <p><a href="../">← All tools</a></p>
+  <h1>USDT to IDR calculator</h1>
+  <p class="muted">Convert between USDT and Indonesian rupiah (IDR). The page loads an approximate live rate when it opens; you can always overwrite it with the rate you are actually offered.</p>
+
+  <div class="card">
+    <label for="rate">Rate: 1 USDT = ? IDR</label>
+    <input id="rate" type="number" min="0" step="any" value="18000" />
+    <p class="muted" style="font-size:.85rem" id="rateinfo">Default 18,000 is only a rough placeholder (Oct 2026) until the live rate loads. Real quotes vary — enter the rate you are actually offered.</p>
+    <button id="refresh" type="button">Reload live rate</button>
+    <label for="usdt">USDT</label>
+    <input id="usdt" type="number" min="0" step="any" value="100" />
+    <label for="idr">IDR</label>
+    <input id="idr" type="number" min="0" step="any" />
+    <p class="result" id="result"></p>
+  </div>
+
+  <h2>How it works</h2>
+  <p>IDR = USDT × rate. USDT = IDR ÷ rate. Type in either box and the other updates. The live rate comes from CoinGecko's public USDT price (fallback: the open.er-api.com USD/IDR reference rate). If an exchange or P2P quote differs, the difference is the spread or fee you are paying. If the live rate cannot load, just type a rate manually.</p>
+  <p class="muted">Not financial advice. This page does not recommend any exchange or cash service.</p>
+
+  <div class="card">
+    <p><strong>Freelancing for USDT?</strong> Ready-made AI agent skills for Claude / Cursor / MCP: invoice requests, wallet address safety, payment checks.</p>
+    <a class="buy" href="https://www.getly.store/product/usdt-agent-skills-pack-claude-cursor-mcp-for-crypto-freelancers">Get USDT Agent Skills Pack — $9</a>
+    <p class="muted" style="margin-top:.7rem">Or the <a href="https://www.getly.store/product/usdt-invoice-kit-offline-freelancer-invoice-prompt-pack">USDT Invoice Kit — $7</a> (offline invoice + prompts).</p>
+  </div>
+
+  <footer>
+    <p>Client-side only. Nothing you type leaves your browser (the only network request is the public rate lookup). No tracking.</p>
+    <p><a href="https://www.getly.store/store/nero-tools-mvb64f1s">NERO Tools on Getly</a> · <a href="../">All free tools</a></p>
+  </footer>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    let manual = false;
+    function rate() { return Math.max(0, Number($("rate").value) || 0); }
+    function fmt(n, d) { return n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d }); }
+    function show() {
+      const r = rate();
+      $("result").textContent = r ? ("1 USDT = " + fmt(r, 2) + " IDR · 1,000,000 IDR = " + fmt(1e6 / r, 2) + " USDT") : "Enter a rate above 0.";
+    }
+    function fromUsdt() { const v = Number($("usdt").value); $("idr").value = isFinite(v) && $("usdt").value !== "" ? Math.round(v * rate()) : ""; show(); }
+    function fromIdr() { const v = Number($("idr").value), r = rate(); $("usdt").value = r && $("idr").value !== "" ? +(v / r).toFixed(2) : ""; show(); }
+    $("usdt").addEventListener("input", fromUsdt);
+    $("idr").addEventListener("input", fromIdr);
+    $("rate").addEventListener("input", () => { manual = true; $("rateinfo").textContent = "Using your manual rate."; fromUsdt(); });
+
+    async function getJson(url) {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 6000);
+      try { const r = await fetch(url, { signal: ctrl.signal }); if (!r.ok) throw new Error("HTTP " + r.status); return await r.json(); }
+      finally { clearTimeout(t); }
+    }
+    async function loadLive(force) {
+      $("rateinfo").textContent = "Loading live rate…";
+      const sources = [
+        ["CoinGecko USDT/IDR", "https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=idr", j => j && j.tether && j.tether.idr],
+        ["open.er-api.com USD/IDR", "https://open.er-api.com/v6/latest/USD", j => j && j.rates && j.rates.IDR]
+      ];
+      for (const [name, url, pick] of sources) {
+        try {
+          const v = Number(pick(await getJson(url)));
+          if (v > 0) {
+            if (manual && !force) { $("rateinfo").textContent = "Live rate (" + name + "): " + fmt(v, 2) + " IDR — keeping your manual rate. Click “Reload live rate” to use it."; return; }
+            manual = false;
+            $("rate").value = +v.toFixed(2);
+            $("rateinfo").textContent = "Live rate from " + name + " at " + new Date().toLocaleTimeString() + ". Approximate — edit it to match the quote you are offered.";
+            fromUsdt();
+            return;
+          }
+        } catch (e) { /* try next source */ }
+      }
+      $("rateinfo").textContent = "Couldn't load a live rate. Enter the rate you are offered manually.";
+    }
+    $("refresh").addEventListener("click", () => loadLive(true));
+    fromUsdt();
+    loadLive(false);
+  </script>
+</body>
+</html>
